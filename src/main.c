@@ -1,33 +1,11 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <SDL2/SDL.h>
 
 #include "chip8.h"
 
-#define DISPLAY_WIDTH 64
-#define DISPLAY_HEIGHT 32
-#define SCALE 10
-
-void render(Chip8 *chip8) {
-    printf("\033[2J\033[H");
-
-    for (int y = 0; y < DISPLAY_HEIGHT; y++) {
-        for (int x = 0; x < DISPLAY_WIDTH; x++) {
-            int index = y * DISPLAY_WIDTH + x;
-
-            if (chip8->display[index]) {
-                printf("#");
-            } else {
-                printf(" ");
-            }
-        }
-        printf("\n");
-    }
-
-    printf("\nPress Enter to exit...");
-    getchar();
-}
-
 int main() {
-    FILE *fptr = fopen("example/ibm_logo.ch8", "rb");
+    FILE *fptr = fopen("example/test_opcode.ch8", "rb");
     if (!fptr) {
         perror("Error opening file.");
         return 1;
@@ -46,14 +24,13 @@ int main() {
 
     fread(buff, 1, sz, fptr);
 
-    // for (long i = 0; i < sz; i++) {
-    //     printf("%02X ", buff[i]);
-    // }
-
-    Chip8 *chip8 = init_chip8();
+    Chip8 *chip8 = init_chip8(1);
     run(chip8, buff, sz);
+    // run(chip8, program, 6);
 
-    render(chip8);
+    // for (int i = 0; i < 16; i++) {
+    //     printf("V[%d]: %d\n", i, chip8->V[i]);
+    // }
 
     free(chip8);
 
