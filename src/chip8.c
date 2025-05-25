@@ -66,6 +66,11 @@ void draw_display(SDL_Renderer *renderer, Chip8 *chip8) {
     SDL_RenderPresent(renderer);
 }
 
+void handle_input(Chip8 *chip8) {
+    SDL_Event event;
+
+}
+
 static inline void display(Chip8 *chip8, uint8_t x, uint8_t y, uint8_t n) {
     uint8_t x_val = chip8->V[x] % 64;
     uint8_t y_val = chip8->V[y] % 32;
@@ -136,7 +141,7 @@ void run(Chip8 *chip8, uint8_t program[], size_t size, SDL_Renderer *renderer) {
 
             case 0x2: {
                 uint16_t addr = both_instr & 0xfff;
-                chip8->stack[chip8->sp++] = addr;
+                chip8->stack[chip8->sp++] = chip8->pc;
                 chip8->pc = addr;
                 break;
             }
@@ -222,6 +227,11 @@ void run(Chip8 *chip8, uint8_t program[], size_t size, SDL_Renderer *renderer) {
                         uint8_t y = (instr2 >> 4) & 0xf;
 
                         uint16_t sum = chip8->V[x] + chip8->V[y];
+                        FILE *log = fopen("chip8_log.txt", "a");
+                        if (log) {
+        fprintf(log, "8xy4: V[%x] = %d, V[%x] = %d, sum = %d\n", x, chip8->V[x], y, chip8->V[y], sum);                            fclose(log);
+                        }
+
                         chip8->V[0xf] = (sum > 0xff) ? 1 : 0;
                         chip8->V[x] = (uint8_t)sum;
                         break;
@@ -256,7 +266,7 @@ void run(Chip8 *chip8, uint8_t program[], size_t size, SDL_Renderer *renderer) {
                         uint8_t y = (instr2 >> 4) & 0xf;
 
                         chip8->V[0xf] = (chip8->V[y] >= chip8->V[x]) ? 1 : 0;
-                        chip8->V[x] = chip8->V[y] - chip8->V[x];; 
+                        chip8->V[x] = chip8->V[y] - chip8->V[x];
                         break;
                     }
 
@@ -400,6 +410,7 @@ void run(Chip8 *chip8, uint8_t program[], size_t size, SDL_Renderer *renderer) {
         }
         
         draw_display(renderer, chip8);
+        handle_input(chip8);
         SDL_Delay(5);
     }
 }
