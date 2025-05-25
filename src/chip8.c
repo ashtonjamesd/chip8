@@ -1,14 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <unistd.h>
 
-#include "chip8.h"
 #include "fontset.h"
-
-#define DISPLAY_WIDTH 64
-#define DISPLAY_HEIGHT 32
-#define SCALE 10
+#include "chip8.h"
 
 Chip8 *init_chip8(int use_original_shift_behavior) {
     Chip8 *chip8 = malloc(sizeof(Chip8));
@@ -34,7 +29,7 @@ Chip8 *init_chip8(int use_original_shift_behavior) {
     return chip8;
 }
 
-void render(Chip8 *chip8) {
+void render_terminal(Chip8 *chip8) {
     printf("\033[2J\033[H");
 
     for (int y = 0; y < DISPLAY_HEIGHT; y++) {
@@ -49,7 +44,26 @@ void render(Chip8 *chip8) {
         }
         printf("\n");
     }
+}
 
+void draw_display(SDL_Renderer *renderer, Chip8 *chip8) {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+    for (int y = 0; y < 32; y++) {
+        for (int x = 0; x < 64; x++) {
+            int index = y * 64 + x;
+
+            if (chip8->display[index]) {
+                SDL_Rect rect = { x * SCALE, y * SCALE, SCALE, SCALE };
+                SDL_RenderFillRect(renderer, &rect);
+            }
+        }
+    }
+
+    SDL_RenderPresent(renderer);
 }
 
 static inline void display(Chip8 *chip8, uint8_t x, uint8_t y, uint8_t n) {
@@ -87,7 +101,7 @@ static inline void load(Chip8 *chip8, uint8_t program[], size_t size) {
     }
 }
 
-void run(Chip8 *chip8, uint8_t program[], size_t size) {
+void run(Chip8 *chip8, uint8_t program[], size_t size, SDL_Renderer *renderer) {
     initialise(chip8);
     load(chip8, program, size);
 
@@ -385,8 +399,7 @@ void run(Chip8 *chip8, uint8_t program[], size_t size) {
                 return;
         }
         
-        usleep(50000);
-        
-        render(chip8);
+        draw_display(renderer, chip8);
+        SDL_Delay(5);
     }
 }

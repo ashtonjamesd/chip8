@@ -1,7 +1,12 @@
 #ifndef CHIP8_H
 #define CHIP8_H
 
+#include <SDL2/SDL.h>
 #include <stdint.h>
+
+#define DISPLAY_WIDTH 64
+#define DISPLAY_HEIGHT 32
+#define SCALE 10
 
 typedef struct {
     uint8_t memory[4096];
@@ -19,6 +24,6 @@ typedef struct {
 } Chip8;
 
 Chip8 *init_chip8(int use_original_shift_behavior);
-void run(Chip8 *chip8, uint8_t program[], size_t size);
+void run(Chip8 *chip8, uint8_t program[], size_t size, SDL_Renderer *renderer);
 
 #endif
